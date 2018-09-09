@@ -25,6 +25,10 @@ public class MainActivity extends AppCompatActivity {
     private EditText emailEditText;
     private LinearLayout telefoneLinearLayout;
     private ArrayList<View> telefoneArrayList;
+    //Email adicionado dinâmicamente
+    private LinearLayout emailLinearLayout;
+    private ArrayList<View> emailArrayList;
+
     private LayoutInflater layoutInflater;
 
 
@@ -41,6 +45,12 @@ public class MainActivity extends AppCompatActivity {
         emailEditText = findViewById(R.id.emailEditText);
         telefoneLinearLayout = findViewById(R.id.telefoneLinearLayout);
         telefoneArrayList = new ArrayList<>();
+
+
+
+        emailLinearLayout = findViewById(R.id.emailLinearLayout);
+        emailArrayList = new ArrayList<>();
+
         layoutInflater = getLayoutInflater();
 
         // Exibindo/ocultando RadioGroup por evento de Click Listener
@@ -117,6 +127,16 @@ public class MainActivity extends AppCompatActivity {
             View novoTelefoneLayout = layoutInflater.inflate(R.layout.novo_telefone_layout,null);
             telefoneArrayList.add(novoTelefoneLayout);
             telefoneLinearLayout.addView(novoTelefoneLayout);
+        }
+    }
+
+
+    public void adicionarEmail(View botao){
+        if (botao.getId() == R.id.adicionarEmailButton){
+
+            View novoEmailLayout = layoutInflater.inflate(R.layout.novo_email_layout,null);
+            emailArrayList.add(novoEmailLayout);
+            emailLinearLayout.addView(novoEmailLayout);
         }
     }
 }
