@@ -14,7 +14,7 @@
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/emailEditText"
+            android:id="@+id/emailEditTextDinamico"
             android:layout_weight="1"
             android:inputType="textEmailAddress"/>
     </LinearLayout>

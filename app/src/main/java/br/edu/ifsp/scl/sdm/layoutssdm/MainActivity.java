@@ -2,6 +2,7 @@ package br.edu.ifsp.scl.sdm.layoutssdm;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.CheckBox;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     //Email adicionado dinâmicamente
     private LinearLayout emailLinearLayout;
     private ArrayList<View> emailArrayList;
+    private ArrayList<String> stringsEmailArrayList;
+    private static String KEY_EMAILS_ARMAZENADOS = "KEY_EMAILS_ARMAZENADOS";
 
     private LayoutInflater layoutInflater;
 
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
 
         emailLinearLayout = findViewById(R.id.emailLinearLayout);
         emailArrayList = new ArrayList<>();
+        stringsEmailArrayList = new ArrayList<>();
 
         layoutInflater = getLayoutInflater();
 
@@ -83,6 +87,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        Log.e("AQUI", "onCreate() Executado");
+        Log.e("AQUI", "emailArrayList.size() " + emailArrayList.size());
+        Log.e("AQUI", "stringsEmailArrayList.size() " + stringsEmailArrayList.size());
+        Log.e("AQUI", "onCreate() Fim");
     }
 
     @Override
@@ -90,11 +99,29 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putBoolean(ESTADO_NOTIFICACAO_CHECKBOX, notificacoesCheckBox.isChecked());
         outState.putInt(NOTIFICACAO_RADIOBUTTON_SELECIONADO, notificacoesRadioGroup.getCheckedRadioButtonId());
+
+        stringsEmailArrayList = new ArrayList<>(); //Conserta um bug de duplicação dos e-mails ao girar a tela mais que uma vez
+        if(emailArrayList.size() > 0) {
+            Log.e("AQUI", "tamanho: " + emailArrayList.size());
+            for (View emailView : emailArrayList) { //  recupera as views adicionadas dinâmicamente para guardar os internos de telefone
+                EditText edtTxtEmail = emailView.findViewById(R.id.emailEditTextDinamico);  // recupera o edtTxtEmail
+                stringsEmailArrayList.add(edtTxtEmail.getText().toString());
+            }
+        }
+
+        //Grava os dados no bundle
+        outState.putStringArrayList(KEY_EMAILS_ARMAZENADOS, stringsEmailArrayList);
+
+        Log.e("AQUI", "onSaveInstanceState() Executado");
+        Log.e("AQUI", "emailArrayList.size() " + emailArrayList.size());
+        Log.e("AQUI", "stringsEmailArrayList.size() " + stringsEmailArrayList.size());
+        Log.e("AQUI", "onSaveInstanceState() Fim");
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+        Log.e("AQUI", "onRestoreInstanceState() Executado");
 
         notificacoesCheckBox.setChecked(savedInstanceState.getBoolean(ESTADO_NOTIFICACAO_CHECKBOX, false));
         // Exibe/Esconde radio group caso o evento implementado seja no OnClick
@@ -110,7 +137,30 @@ public class MainActivity extends AppCompatActivity {
         if (idRadioButtonSelecionado != -1) {
             notificacoesRadioGroup.check(idRadioButtonSelecionado);
         }
+
+
+        //Recupera a lista de emails
+        stringsEmailArrayList = savedInstanceState.getStringArrayList(KEY_EMAILS_ARMAZENADOS);
+
+
+
+
+        if(stringsEmailArrayList.size() > 0) {
+            Log.e("AQUI", "Tamanho recuperado e-mail: " + stringsEmailArrayList.size());
+            for(String emailString : stringsEmailArrayList) {
+                View email = adicionarEmailDinamicoView(); //Infla a view e adiciona na tela dinâmicamente
+                EditText emailEditTextDinamico = email.findViewById(R.id.emailEditTextDinamico);
+                emailEditTextDinamico.setText(emailString);
+                Log.e("AQUI", "Adicionado e-mail: " + emailString);
+            }
+        }
+
+
+        Log.e("AQUI", "emailArrayList.size() " + emailArrayList.size());
+        Log.e("AQUI", "stringsEmailArrayList.size() " + stringsEmailArrayList.size());
+        Log.e("AQUI", "onRestoreInstanceState() Fim");
     }
+
 
     public void limparFormulario(View botao){
         notificacoesCheckBox.setChecked(false);
@@ -137,6 +187,20 @@ public class MainActivity extends AppCompatActivity {
             View novoEmailLayout = layoutInflater.inflate(R.layout.novo_email_layout,null);
             emailArrayList.add(novoEmailLayout);
             emailLinearLayout.addView(novoEmailLayout);
+
+
         }
     }
+
+    //Infla a view e adiciona na tela dinâmicamente
+    public  View adicionarEmailDinamicoView(){
+        View novoEmailLayout = layoutInflater.inflate(R.layout.novo_email_layout,null);
+        emailArrayList.add(novoEmailLayout);
+        emailLinearLayout.addView(novoEmailLayout);
+
+        return novoEmailLayout;
+    }
+
+
+
 }
