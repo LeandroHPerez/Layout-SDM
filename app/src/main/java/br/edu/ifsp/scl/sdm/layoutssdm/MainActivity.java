@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 
 import java.util.ArrayList;
 
@@ -24,8 +25,15 @@ public class MainActivity extends AppCompatActivity {
     private EditText nomeEditText;
     private EditText telefoneEditText;
     private EditText emailEditText;
+
+
     private LinearLayout telefoneLinearLayout;
     private ArrayList<View> telefoneArrayList;
+    private ArrayList<String> stringsTelefoneArrayList;
+    private ArrayList<Integer> intTipoTelefoneArrayList;
+    private static String KEY_TELEFONES_ARMAZENADOS = "KEY_TELEFONES_ARMAZENADOS";
+    private static String KEY_TIPOS_TELEFONES_ARMAZENADOS = "KEY_TIPOS_TELEFONES_ARMAZENADOS";
+
     //Email adicionado dinâmicamente
     private LinearLayout emailLinearLayout;
     private ArrayList<View> emailArrayList;
@@ -46,11 +54,14 @@ public class MainActivity extends AppCompatActivity {
         nomeEditText = findViewById(R.id.nomeEditText);
         telefoneEditText = findViewById(R.id.telefoneEditText);
         emailEditText = findViewById(R.id.emailEditText);
+
+        //Telefone
         telefoneLinearLayout = findViewById(R.id.telefoneLinearLayout);
         telefoneArrayList = new ArrayList<>();
+        stringsTelefoneArrayList = new ArrayList<>();
+        intTipoTelefoneArrayList = new ArrayList<>();
 
-
-
+        //Email
         emailLinearLayout = findViewById(R.id.emailLinearLayout);
         emailArrayList = new ArrayList<>();
         stringsEmailArrayList = new ArrayList<>();
@@ -89,9 +100,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Log.e("AQUI", "onCreate() Executado");
-        Log.e("AQUI", "emailArrayList.size() " + emailArrayList.size());
-        Log.e("AQUI", "stringsEmailArrayList.size() " + stringsEmailArrayList.size());
-        Log.e("AQUI", "onCreate() Fim");
     }
 
     @Override
@@ -100,22 +108,41 @@ public class MainActivity extends AppCompatActivity {
         outState.putBoolean(ESTADO_NOTIFICACAO_CHECKBOX, notificacoesCheckBox.isChecked());
         outState.putInt(NOTIFICACAO_RADIOBUTTON_SELECIONADO, notificacoesRadioGroup.getCheckedRadioButtonId());
 
+        //Salva os e-mail dinâmicos
         stringsEmailArrayList = new ArrayList<>(); //Conserta um bug de duplicação dos e-mails ao girar a tela mais que uma vez
         if(emailArrayList.size() > 0) {
-            Log.e("AQUI", "tamanho: " + emailArrayList.size());
             for (View emailView : emailArrayList) { //  recupera as views adicionadas dinâmicamente para guardar os internos de telefone
                 EditText edtTxtEmail = emailView.findViewById(R.id.emailEditTextDinamico);  // recupera o edtTxtEmail
                 stringsEmailArrayList.add(edtTxtEmail.getText().toString());
             }
         }
-
-        //Grava os dados no bundle
+        //Grava os dados no bundle - para e-mails
         outState.putStringArrayList(KEY_EMAILS_ARMAZENADOS, stringsEmailArrayList);
 
+
+
+        //Salva os telefones dinâmicos
+        stringsTelefoneArrayList = new ArrayList<>(); //Conserta um bug de duplicação de telefone ao girar a tela mais que uma vez
+        if(telefoneArrayList.size() > 0) {
+            for (View telefoneView : telefoneArrayList) { //  recupera as views adicionadas dinâmicamente para guardar os internos de telefone
+                EditText edtTxtTelefone = telefoneView.findViewById(R.id.telefoneEditText);  // recupera o edtTxtTelefone
+                stringsTelefoneArrayList.add(edtTxtTelefone.getText().toString());
+
+                Spinner spinnerTipoTelefone = telefoneView.findViewById(R.id.tipoTelefoneSpinner);  // recupera o spinner
+
+                if(spinnerTipoTelefone.getSelectedItem().equals("Fixo")){ // verifica o tipo do fone e guarda com seu valor na lista
+                    intTipoTelefoneArrayList.add(0);   // 0 para fixo  1 para celular.
+                }
+                else{
+                    intTipoTelefoneArrayList.add(1);
+                }
+            }
+        }
+        //Grava os dados no bundle - para telefones
+        outState.putStringArrayList(KEY_TELEFONES_ARMAZENADOS, stringsTelefoneArrayList);
+        outState.putIntegerArrayList(KEY_TIPOS_TELEFONES_ARMAZENADOS, intTipoTelefoneArrayList);
+
         Log.e("AQUI", "onSaveInstanceState() Executado");
-        Log.e("AQUI", "emailArrayList.size() " + emailArrayList.size());
-        Log.e("AQUI", "stringsEmailArrayList.size() " + stringsEmailArrayList.size());
-        Log.e("AQUI", "onSaveInstanceState() Fim");
     }
 
     @Override
@@ -142,11 +169,7 @@ public class MainActivity extends AppCompatActivity {
         //Recupera a lista de emails
         stringsEmailArrayList = savedInstanceState.getStringArrayList(KEY_EMAILS_ARMAZENADOS);
 
-
-
-
         if(stringsEmailArrayList.size() > 0) {
-            Log.e("AQUI", "Tamanho recuperado e-mail: " + stringsEmailArrayList.size());
             for(String emailString : stringsEmailArrayList) {
                 View email = adicionarEmailDinamicoView(); //Infla a view e adiciona na tela dinâmicamente
                 EditText emailEditTextDinamico = email.findViewById(R.id.emailEditTextDinamico);
@@ -156,9 +179,26 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        Log.e("AQUI", "emailArrayList.size() " + emailArrayList.size());
-        Log.e("AQUI", "stringsEmailArrayList.size() " + stringsEmailArrayList.size());
-        Log.e("AQUI", "onRestoreInstanceState() Fim");
+        //Recupera a lista de telefones
+        stringsTelefoneArrayList = savedInstanceState.getStringArrayList(KEY_TELEFONES_ARMAZENADOS);
+        intTipoTelefoneArrayList = savedInstanceState.getIntegerArrayList(KEY_TIPOS_TELEFONES_ARMAZENADOS);
+
+        if(stringsTelefoneArrayList.size() > 0) {
+            int i = 0; // variável de controle para recuperar valores de tipo de telefone
+            for(String telefoneString : stringsTelefoneArrayList) {
+                View telefone = adicionarTelefoneDinamicoView(); //Infla a view e adiciona na tela dinâmicamente
+                EditText telefoneEditTextDinamico = telefone.findViewById(R.id.telefoneEditText);
+                telefoneEditTextDinamico.setText(telefoneString);
+
+                Spinner spinnerTipoTelefone = telefone.findViewById(R.id.tipoTelefoneSpinner);  // recupera o spinner
+                spinnerTipoTelefone.setSelection(intTipoTelefoneArrayList.get(i)); // seta o tipo do spinner.
+
+                i++;
+                Log.e("AQUI", "Adicionado telefone: " + telefoneString);
+            }
+        }
+
+        Log.e("AQUI", "onRestoreInstanceState() Executado");
     }
 
 
@@ -187,8 +227,6 @@ public class MainActivity extends AppCompatActivity {
             View novoEmailLayout = layoutInflater.inflate(R.layout.novo_email_layout,null);
             emailArrayList.add(novoEmailLayout);
             emailLinearLayout.addView(novoEmailLayout);
-
-
         }
     }
 
@@ -199,6 +237,16 @@ public class MainActivity extends AppCompatActivity {
         emailLinearLayout.addView(novoEmailLayout);
 
         return novoEmailLayout;
+    }
+
+
+    //Infla a view e adiciona na tela dinâmicamente
+    public  View adicionarTelefoneDinamicoView(){
+        View novoTelefoneLayout = layoutInflater.inflate(R.layout.novo_telefone_layout,null);
+        telefoneArrayList.add(novoTelefoneLayout);
+        telefoneLinearLayout.addView(novoTelefoneLayout);
+
+        return novoTelefoneLayout;
     }
 
 
